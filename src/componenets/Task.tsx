@@ -200,6 +200,7 @@ export default function MonthTaskPlanner() {
   }
 
   function onDayPointerEnter(e: React.PointerEvent, iso: string) {
+    (e.target as Element).setPointerCapture(e.pointerId);
     if (!isSelecting || !selectStartRef.current) return;
     const start = parseISO(selectStartRef.current);
     const cur = parseISO(iso);
@@ -209,6 +210,7 @@ export default function MonthTaskPlanner() {
   }
 
   function onDayPointerUp(e: React.PointerEvent) {
+    (e.target as Element).releasePointerCapture(e.pointerId);
     if (!isSelecting || !selectRange) {
       setIsSelecting(false);
       selectStartRef.current = null;
@@ -288,6 +290,7 @@ export default function MonthTaskPlanner() {
   }
 
   function onGridPointerUp(e: React.PointerEvent) {
+    e.stopPropagation();
     if (movingTaskId) setMovingTaskId(null);
     if (resizing) setResizing(null);
   }
