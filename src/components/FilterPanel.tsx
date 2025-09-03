@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { setCategories, setDurationWeeks } from "../store/tasksSlice";
+import { setCategories, setDurationWeeks } from "../store/TasksSlice";
 import type { RootState } from "@/store";
 
 const categories = ["To Do", "In Progress", "Review", "Completed"] as const;

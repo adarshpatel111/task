@@ -1,5 +1,5 @@
 import { useDispatch } from "react-redux";
-import { setSearchQuery } from "../store/tasksSlice";
+import { setSearchQuery } from "../store/TasksSlice";
 
 export default function SearchBar() {
   const dispatch = useDispatch();
