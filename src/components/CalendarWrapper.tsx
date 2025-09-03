@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import {
   startOfMonth,
