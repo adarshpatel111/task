@@ -1,15 +1,10 @@
 import { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import {
-  selectFilteredTasks,
-  deleteTask,
-  updateTask,
-} from "../store/TasksSlice";
+import { useSelector } from "react-redux";
+import { selectFilteredTasks } from "../store/TasksSlice";
 import type { RootState } from "../store";
 import { format, parseISO } from "date-fns";
 import type { Task } from "../types/task";
 import TaskSheet from "./TaskSheet";
-import { Trash } from "lucide-react";
 
 const categoryColors: Record<Task["category"], string> = {
   "To Do": "bg-amber-200 text-amber-900",
@@ -19,7 +14,6 @@ const categoryColors: Record<Task["category"], string> = {
 };
 
 export default function SidebarTasks() {
-  const dispatch = useDispatch();
   const tasks = useSelector((s: RootState) => selectFilteredTasks(s));
 
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
