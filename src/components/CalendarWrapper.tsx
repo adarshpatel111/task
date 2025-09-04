@@ -17,31 +17,69 @@ import { selectFilteredTasks, updateTask } from "../store/TasksSlice";
 import CreateTaskModal from "./CreateTaskModal";
 import TaskBar from "./TaskBar";
 import TaskSheet from "./TaskSheet";
-import { DndContext, type DragEndEvent } from "@dnd-kit/core";
+import { DndContext, type DragEndEvent, useDroppable } from "@dnd-kit/core";
+import type { Task } from "../types/task";
 
 function formatKey(d: Date) {
   return format(d, "yyyy-MM-dd");
 }
 
+/** Small droppable day cell component */
+function DayCell({
+  day,
+  currentMonth,
+  minHeight,
+  paddingTop,
+  isHighlighted,
+  onMouseDown,
+  onMouseEnter,
+}) {
+  const dayKey = formatKey(day);
+  const isToday = isSameDay(day, new Date());
+  const inMonth = isSameMonth(day, currentMonth);
+
+  const { setNodeRef } = useDroppable({ id: dayKey, data: { date: dayKey } });
+
+  return (
+    <div
+      ref={setNodeRef}
+      id={dayKey}
+      data-date={dayKey}
+      onMouseDown={() => onMouseDown(dayKey)}
+      onMouseEnter={() => onMouseEnter(dayKey)}
+      className={`border-r border-b border-slate-800 bg-slate-900 relative ${
+        inMonth ? "" : "opacity-50"
+      }`}
+      style={{ minHeight: `${minHeight}px`, paddingTop: `${paddingTop}px` }}
+    >
+      <div
+        className={`absolute top-1 right-2 text-xs z-30 ${
+          isToday ? "text-right text-amber-400 font-semibold" : "text-slate-400"
+        }`}
+      >
+        {isToday ? `Today :- ${format(day, "d")}` : format(day, "d")}
+      </div>
+
+      {isHighlighted && (
+        <div className="absolute inset-0 bg-blue-700/10 pointer-events-none" />
+      )}
+    </div>
+  );
+}
+
 export default function CalendarWrapper() {
   const dispatch = useDispatch();
-  const tasks = useSelector(selectFilteredTasks);
+  const tasks = useSelector(selectFilteredTasks) as Task[];
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [draggingRange, setDraggingRange] = useState<{
-    start: string;
-    end: string;
-  } | null>(null);
+  const [draggingRange, setDraggingRange] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const dragStartRef = useRef<string | null>(null);
-  const [selectedTask, setSelectedTask] = useState<null | any>(null);
+  const dragStartRef = useRef(null);
+
+  const [selectedTask, setSelectedTask] = useState(null);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [resizing, setResizing] = useState<null | {
-    taskId: string;
-    side: "left" | "right";
-    previewStart?: string;
-    previewEnd?: string;
-  }>(null);
+
+  const [resizing, setResizing] = useState(null);
 
   const dayCellPaddingTop = 44;
   const taskRowHeight = 32;
@@ -53,10 +91,10 @@ export default function CalendarWrapper() {
   const gridEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
 
   const weeks = useMemo(() => {
-    const arr: Date[][] = [];
+    const arr = [];
     let d = gridStart;
     while (d <= gridEnd) {
-      const week: Date[] = [];
+      const week = [];
       for (let i = 0; i < 7; i++) {
         week.push(d);
         d = addDays(d, 1);
@@ -70,13 +108,13 @@ export default function CalendarWrapper() {
   const nextMonth = () => setCurrentMonth(addDays(monthEnd, 1));
   const goToday = () => setCurrentMonth(new Date());
 
-  const handleTaskClick = (task: any) => {
+  const handleTaskClick = (task) => {
     setSelectedTask(task);
     setSheetOpen(true);
   };
 
   const onResizeStart = useCallback(
-    (taskId: string, side: "left" | "right") => {
+    (taskId, side) => {
       setResizing({
         taskId,
         side,
@@ -84,12 +122,9 @@ export default function CalendarWrapper() {
         previewEnd: undefined,
       });
 
-      const onMove = (e: MouseEvent) => {
-        const el = document.elementFromPoint(
-          e.clientX,
-          e.clientY
-        ) as HTMLElement | null;
-        const tile = el?.closest("[data-date]") as HTMLElement | null;
+      const onMove = (e) => {
+        const el = document.elementFromPoint(e.clientX, e.clientY);
+        const tile = el?.closest("[data-date]");
         if (!tile) return;
         const date = tile.getAttribute("data-date");
         if (!date) return;
@@ -99,16 +134,21 @@ export default function CalendarWrapper() {
           const original = tasks.find((t) => t.id === prev.taskId);
           if (!original) return prev;
 
+          const origStart = parseISO(original.startDate);
+          const origEnd = parseISO(original.endDate);
+          const hovered = parseISO(date);
+
           if (prev.side === "left") {
             const newStart =
-              date <= original.endDate ? date : original.startDate;
+              hovered <= origEnd ? date : format(origEnd, "yyyy-MM-dd");
             return {
               ...prev,
               previewStart: newStart,
               previewEnd: original.endDate,
             };
           } else {
-            const newEnd = date >= original.startDate ? date : original.endDate;
+            const newEnd =
+              hovered >= origStart ? date : format(origStart, "yyyy-MM-dd");
             return {
               ...prev,
               previewStart: original.startDate,
@@ -145,12 +185,12 @@ export default function CalendarWrapper() {
 
   useEffect(() => () => setResizing(null), []);
 
-  const onTileMouseDown = (dateKey: string) => {
+  const onTileMouseDown = (dateKey) => {
     if (resizing) return;
     dragStartRef.current = dateKey;
     setDraggingRange({ start: dateKey, end: dateKey });
   };
-  const onTileMouseEnter = (dateKey: string) => {
+  const onTileMouseEnter = (dateKey) => {
     if (!dragStartRef.current || resizing) return;
     const s = dragStartRef.current < dateKey ? dragStartRef.current : dateKey;
     const e = dragStartRef.current < dateKey ? dateKey : dragStartRef.current;
@@ -164,21 +204,20 @@ export default function CalendarWrapper() {
   const onDragEnd = (evt: DragEndEvent) => {
     const { active, over } = evt;
     if (!over) return;
-    const payload = (active.data?.current as any)?.task as any | undefined;
+    const payload = active.data?.current?.task;
     if (!payload) return;
 
-    const dateStr = over.id as string;
-    const task = payload as any;
+    const targetDate = over.id;
     const durDays = differenceInCalendarDays(
-      parseISO(task.endDate),
-      parseISO(task.startDate)
+      parseISO(payload.endDate),
+      parseISO(payload.startDate)
     );
-    const newStart = parseISO(dateStr);
+    const newStart = parseISO(targetDate);
     const newEnd = addDays(newStart, durDays);
 
     dispatch(
       updateTask({
-        id: task.id,
+        id: payload.id,
         updates: {
           startDate: format(newStart, "yyyy-MM-dd"),
           endDate: format(newEnd, "yyyy-MM-dd"),
@@ -187,7 +226,7 @@ export default function CalendarWrapper() {
     );
   };
 
-  const getTaskRange = (task: any) => {
+  const getTaskRange = (task) => {
     if (
       resizing &&
       resizing.taskId === task.id &&
@@ -212,7 +251,7 @@ export default function CalendarWrapper() {
         return !(end < weekStart || start > weekEnd);
       });
 
-      const rows: any[][] = [];
+      const rows = [];
       weekTasks.forEach((task) => {
         const { start: sRaw, end: eRaw } = getTaskRange(task);
         const s = sRaw < weekStart ? weekStart : sRaw;
@@ -220,7 +259,7 @@ export default function CalendarWrapper() {
 
         let placed = false;
         for (let r = 0; r < rows.length; r++) {
-          const overlaps = rows[r].some((t2: any) => {
+          const overlaps = rows[r].some((t2) => {
             const { start: s2Raw, end: e2Raw } = getTaskRange(t2);
             const s2 = s2Raw < weekStart ? weekStart : s2Raw;
             const e2 = e2Raw > weekEnd ? weekEnd : e2Raw;
@@ -242,35 +281,42 @@ export default function CalendarWrapper() {
   const maxRows = Math.max(1, ...rowsPerWeek.map((r) => r.length));
   const overlayHeight = maxRows * (taskRowHeight + taskRowGap);
 
+  const colors = {
+    "To Do": "bg-amber-100 text-slate-900 border border-amber-300",
+    "In Progress": "bg-rose-300 text-slate-900 border border-rose-400",
+    Review: "bg-violet-300 text-slate-900 border border-violet-400",
+    Completed: "bg-emerald-300 text-slate-900 border border-emerald-400",
+  };
+
   return (
     <div onMouseUp={onMouseUp} className="text-slate-100 overflow-x-hidden">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setCurrentMonth(addDays(monthStart, -1))}
+            onClick={prevMonth}
             className="px-3 py-1 bg-slate-800 rounded hover:bg-slate-700"
           >
             Prev
           </button>
           <button
-            onClick={() => setCurrentMonth(new Date())}
+            onClick={goToday}
             className="px-3 py-1 bg-slate-800 rounded hover:bg-slate-700"
           >
             Today
           </button>
           <button
-            onClick={() => setCurrentMonth(addDays(monthEnd, 1))}
+            onClick={nextMonth}
             className="px-3 py-1 bg-slate-800 rounded hover:bg-slate-700"
           >
             Next
           </button>
         </div>
-
         <h2 className="text-xl font-medium">
           {format(currentMonth, "MMMM yyyy")}
         </h2>
         <div />
       </div>
+
       <div className="grid grid-cols-7 text-sm text-slate-400 mb-2">
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
           <div key={d} className="text-center py-1">
@@ -287,53 +333,34 @@ export default function CalendarWrapper() {
             const rows = rowsPerWeek[wIdx] ?? [];
 
             return (
-              <div key={wIdx} className="relative overflow-hidden">
+              <div key={wIdx} className="relative">
                 <div className="grid grid-cols-7 gap-0 border border-slate-700 rounded overflow-hidden">
                   {week.map((day) => {
                     const dayKey = formatKey(day);
-                    const isToday = isSameDay(day, new Date());
-                    const inMonth = isSameMonth(day, currentMonth);
-
+                    const isHighlighted =
+                      draggingRange &&
+                      dayKey >= draggingRange.start &&
+                      dayKey <= draggingRange.end;
                     return (
-                      <div
-                        key={dayKey}
-                        id={dayKey}
-                        data-date={dayKey}
-                        onMouseDown={() => onTileMouseDown(dayKey)}
-                        onMouseEnter={() => onTileMouseEnter(dayKey)}
-                        className={`border-r border-b border-slate-800 bg-slate-900 relative ${
-                          inMonth ? "" : "opacity-50"
-                        }`}
-                        style={{
-                          minHeight: `${
-                            dayCellPaddingTop + overlayHeight + 20
-                          }px`,
-                          paddingTop: `${dayCellPaddingTop}px`,
-                        }}
-                      >
-                        <div
-                          className={`absolute top-1 right-2 text-xs z-30 ${
-                            isToday
-                              ? "text-amber-400 font-semibold"
-                              : "text-slate-400"
-                          }`}
-                        >
-                          {format(day, "d")}
-                        </div>
-
-                        {draggingRange &&
-                          dayKey >= draggingRange.start &&
-                          dayKey <= draggingRange.end && (
-                            <div className="absolute inset-0 bg-blue-700/6 pointer-events-none" />
-                          )}
-                      </div>
+                      <>
+                        <DayCell
+                          key={dayKey}
+                          day={day}
+                          currentMonth={currentMonth}
+                          minHeight={dayCellPaddingTop + overlayHeight + 20}
+                          paddingTop={dayCellPaddingTop}
+                          isHighlighted={!!isHighlighted}
+                          onMouseDown={onTileMouseDown}
+                          onMouseEnter={onTileMouseEnter}
+                        />
+                      </>
                     );
                   })}
                 </div>
 
                 <div
-                  className="absolute left-0 right-0 top-0 pointer-events-none"
-                  style={{ height: `${overlayHeight}px`, marginTop: "8px" }}
+                  className="absolute left-0 right-0 top-0 pointer-events-none overflow-hidden"
+                  style={{ height: `${overlayHeight}px`, marginTop: "30px" }}
                 >
                   {rows.map((rowTasks, rowIdx) => (
                     <div
@@ -344,7 +371,7 @@ export default function CalendarWrapper() {
                         marginBottom: `${taskRowGap}px`,
                       }}
                     >
-                      {rowTasks.map((task: any) => {
+                      {rowTasks.map((task) => {
                         const { start: realStart, end: realEnd } =
                           getTaskRange(task);
                         const displayStart =
@@ -363,44 +390,35 @@ export default function CalendarWrapper() {
                         const leftPct = (offsetDays / 7) * 100;
                         const widthPct = (spanDays / 7) * 100;
 
-                        const colors: Record<string, string> = {
-                          "To Do":
-                            "bg-amber-100 text-slate-900 border border-amber-300",
-                          "In Progress":
-                            "bg-rose-300 text-slate-900 border border-rose-400",
-                          Review:
-                            "bg-violet-300 text-slate-900 border border-violet-400",
-                          Completed:
-                            "bg-emerald-300 text-slate-900 border border-emerald-400",
-                        };
+                        const weekKey = formatKey(weekStart);
+                        const segmentId = `${task.id}-${weekKey}`;
 
                         return (
-                          <>
-                            <TaskBar
-                              key={task.id}
-                              task={task}
-                              onResizeStart={onResizeStart}
-                              onClick={handleTaskClick}
-                              className={`${
-                                colors[task.category] ??
-                                "bg-amber-100 text-slate-900"
-                              } rounded-full`}
-                              style={{
-                                left: `${leftPct}%`,
-                                width: `${widthPct}%`,
-                                top: 0,
-                                height: `${taskRowHeight}px`,
-                              }}
-                            >
-                              <div className="flex items-center gap-3 w-full">
-                                <span className="w-2 h-2 rounded-full bg-amber-600 inline-block ml-1" />
-                                <span className="truncate">{task.name}</span>
-                                <span className="ml-auto text-xs opacity-60 pr-2">
-                                  {format(parseISO(task.endDate), "d")}
-                                </span>
-                              </div>
-                            </TaskBar>
-                          </>
+                          <TaskBar
+                            key={`${task.id}-${weekKey}`}
+                            task={task}
+                            draggableId={segmentId}
+                            onResizeStart={onResizeStart}
+                            onClick={handleTaskClick}
+                            className={`${
+                              colors[task.category] ??
+                              "bg-amber-100 text-slate-900"
+                            } rounded-full pointer-events-auto`}
+                            style={{
+                              left: `${leftPct}%`,
+                              width: `${widthPct}%`,
+                              top: 0,
+                              height: `${taskRowHeight}px`,
+                            }}
+                          >
+                            <div className="flex items-center gap-3 w-full">
+                              <span className="w-2 h-2 rounded-full bg-black/40 inline-block ml-1" />
+                              <span className="truncate">{task.name}</span>
+                              <span className="ml-auto text-xs opacity-70 pr-2">
+                                {format(parseISO(task.endDate), "d")}
+                              </span>
+                            </div>
+                          </TaskBar>
                         );
                       })}
                     </div>
