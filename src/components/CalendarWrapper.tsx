@@ -24,7 +24,6 @@ function formatKey(d: Date) {
   return format(d, "yyyy-MM-dd");
 }
 
-/** Small droppable day cell component */
 function DayCell({
   day,
   currentMonth,
@@ -108,7 +107,10 @@ export default function CalendarWrapper() {
   const nextMonth = () => setCurrentMonth(addDays(monthEnd, 1));
   const goToday = () => setCurrentMonth(new Date());
 
-  const handleTaskClick = (task) => {
+  const handleTaskClick = (task: Task) => {
+    if (selectedTask?.id === task.id && sheetOpen) {
+      return;
+    }
     setSelectedTask(task);
     setSheetOpen(true);
   };
@@ -342,18 +344,16 @@ export default function CalendarWrapper() {
                       dayKey >= draggingRange.start &&
                       dayKey <= draggingRange.end;
                     return (
-                      <>
-                        <DayCell
-                          key={dayKey}
-                          day={day}
-                          currentMonth={currentMonth}
-                          minHeight={dayCellPaddingTop + overlayHeight + 20}
-                          paddingTop={dayCellPaddingTop}
-                          isHighlighted={!!isHighlighted}
-                          onMouseDown={onTileMouseDown}
-                          onMouseEnter={onTileMouseEnter}
-                        />
-                      </>
+                      <DayCell
+                        key={dayKey}
+                        day={day}
+                        currentMonth={currentMonth}
+                        minHeight={dayCellPaddingTop + overlayHeight + 20}
+                        paddingTop={dayCellPaddingTop}
+                        isHighlighted={!!isHighlighted}
+                        onMouseDown={onTileMouseDown}
+                        onMouseEnter={onTileMouseEnter}
+                      />
                     );
                   })}
                 </div>
@@ -399,7 +399,7 @@ export default function CalendarWrapper() {
                             task={task}
                             draggableId={segmentId}
                             onResizeStart={onResizeStart}
-                            onClick={handleTaskClick}
+                            onClick={() => handleTaskClick(task)}
                             className={`${
                               colors[task.category] ??
                               "bg-amber-100 text-slate-900"

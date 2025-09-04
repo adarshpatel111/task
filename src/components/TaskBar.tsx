@@ -56,7 +56,7 @@ export default function TaskBar({
       {...listeners}
       role="button"
       aria-label={task.name}
-      className={`absolute pointer-events-auto cursor-grab active:cursor-grabbing px-3 py-0.5 text-sm truncate shadow-sm flex items-center ${className}`}
+      className={`absolute pointer-events-auto  cursor-pointer px-3 py-0.5 text-sm truncate shadow-sm flex items-center ${className}`}
       style={{
         position: "absolute",
         left: `${leftPct}%`,
