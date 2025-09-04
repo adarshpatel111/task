@@ -48,7 +48,7 @@ export default function SidebarTasks() {
               >
                 <button
                   onClick={() => handleEdit(task)}
-                  className="w-full text-left flex flex-col gap-1"
+                  className="w-full text-left flex flex-col gap-1 cursor-pointer"
                   title="Open task"
                 >
                   <div className="flex items-center justify-between">

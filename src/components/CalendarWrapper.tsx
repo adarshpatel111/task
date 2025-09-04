@@ -107,13 +107,10 @@ export default function CalendarWrapper() {
   const nextMonth = () => setCurrentMonth(addDays(monthEnd, 1));
   const goToday = () => setCurrentMonth(new Date());
 
-  const handleTaskClick = (task: Task) => {
-    if (selectedTask?.id === task.id && sheetOpen) {
-      return;
-    }
+  const handleTaskClick = useCallback((task: Task) => {
     setSelectedTask(task);
     setSheetOpen(true);
-  };
+  }, []);
 
   const onResizeStart = useCallback(
     (taskId, side) => {
@@ -199,7 +196,9 @@ export default function CalendarWrapper() {
     setDraggingRange({ start: s, end: e });
   };
   const onMouseUp = () => {
-    if (draggingRange) setModalOpen(true);
+    if (draggingRange) {
+      setModalOpen(true);
+    }
     dragStartRef.current = null;
   };
 
@@ -395,7 +394,7 @@ export default function CalendarWrapper() {
 
                         return (
                           <TaskBar
-                            key={`${task.id}-${weekKey}`}
+                            key={segmentId}
                             task={task}
                             draggableId={segmentId}
                             onResizeStart={onResizeStart}
