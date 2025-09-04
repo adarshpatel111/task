@@ -3,6 +3,18 @@ import { format, parseISO } from "date-fns";
 import { useDispatch } from "react-redux";
 import { updateTask, deleteTask } from "../store/TasksSlice";
 import type { Task, TaskCategory } from "../types/task";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Props {
   open: boolean;
@@ -57,12 +69,13 @@ export default function TaskSheet({ open, task, onClose }: Props) {
         },
       })
     );
+    toast.success("Task saved successfully");
     onClose();
   };
 
   const handleDelete = () => {
-    if (!confirm("Delete this task?")) return;
     dispatch(deleteTask(task.id));
+    toast.success("Task deleted");
     onClose();
   };
 
@@ -145,14 +158,29 @@ export default function TaskSheet({ open, task, onClose }: Props) {
           </div>
 
           <div className="flex items-center justify-between gap-2 mt-4">
-            <div className="flex gap-2">
-              <button
-                onClick={handleDelete}
-                className="px-3 py-2 bg-red-600 text-white rounded"
-              >
-                Delete
-              </button>
-            </div>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button className="px-3 py-2 bg-red-600 text-white rounded">
+                  Delete
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete task?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. The task will be permanently
+                    removed.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete}>
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
             <div className="flex gap-2">
               <button onClick={onClose} className="px-3 py-2 border rounded">
                 Cancel
