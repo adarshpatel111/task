@@ -90,7 +90,7 @@ export default function TaskBar({
         style={{ zIndex: 20 }}
         aria-label="Resize start"
       >
-        <div className="w-1 h-6 rounded-l bg-primary/30" />
+        <div className="w-1 h-6 rounded-l bg-transparent" />
       </div>
 
       <div
@@ -110,7 +110,7 @@ export default function TaskBar({
         style={{ zIndex: 20 }}
         aria-label="Resize end"
       >
-        <div className="w-1 h-6 rounded-r bg-primary/30" />
+        <div className="w-1 h-6 rounded-r bg-transparent" />
       </div>
     </div>
   );
