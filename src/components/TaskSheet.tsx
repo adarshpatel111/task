@@ -108,12 +108,12 @@ export default function TaskSheet({ open, task, onClose }: Props) {
         </div>
 
         <div className="space-y-4">
-          <div>
+          <div className="flex flex-col gap-1">
             <Label>Title</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-1">
             <Label>Description</Label>
             <Textarea
               value={description}
@@ -123,7 +123,7 @@ export default function TaskSheet({ open, task, onClose }: Props) {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div>
+            <div className="flex flex-col gap-1">
               <Label>Start</Label>
               <Input
                 type="date"
@@ -131,7 +131,7 @@ export default function TaskSheet({ open, task, onClose }: Props) {
                 onChange={(e) => setStartDate(e.target.value)}
               />
             </div>
-            <div>
+            <div className="flex flex-col gap-1">
               <Label>End</Label>
               <Input
                 type="date"
@@ -141,7 +141,7 @@ export default function TaskSheet({ open, task, onClose }: Props) {
             </div>
           </div>
 
-          <div>
+          <div className="flex flex-col gap-1">
             <Label>Category</Label>
             <Select
               value={category}
