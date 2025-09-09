@@ -24,8 +24,8 @@ export default function SidebarTasks() {
 
   return (
     <>
-      <div className="mt-6">
-        <h3 className="text-sm font-semibold text-black tracking-wide mb-3">
+      <div className="mt-1">
+        <h3 className="text-sm font-semibold text-black tracking-wide mb-1">
           Tasks
         </h3>
 
@@ -34,7 +34,7 @@ export default function SidebarTasks() {
             No tasks to show.
           </div>
         ) : (
-          <div className="space-y-3 max-h-[65vh]  pr-1">
+          <div className="space-y-2 max-h-[65vh]  pr-2">
             {sorted.map((task) => (
               <div
                 key={task.id}
@@ -65,7 +65,7 @@ export default function SidebarTasks() {
                 </button>
 
                 {task.description && (
-                  <p className="mt-2 text-xs text-muted line-clamp-2">
+                  <p className="mt-2 text-xs text-gray-700 line-clamp-2">
                     {task.description}
                   </p>
                 )}

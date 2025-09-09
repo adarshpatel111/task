@@ -17,7 +17,9 @@ export default function FilterPanel() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="font-medium mb-3 text-foreground">Categories</h3>
+        <h3 className="text-sm mb-3 font-semibold text-black tracking-wide">
+          Categories
+        </h3>
         <div className="grid grid-cols-2 gap-2">
           {categories.map((c) => (
             <label
