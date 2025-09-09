@@ -44,43 +44,54 @@ export default function CreateTaskModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="bg-white text-slate-900 rounded p-4 w-96">
-        <h3 className="text-lg font-medium mb-2">Create Task</h3>
+      <div className="bg-card text-card-foreground rounded-xl shadow-lg p-6 w-96 border border-border">
+        <h3 className="text-lg font-semibold mb-4">Create Task</h3>
 
-        <label className="block mb-2">Title</label>
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="w-full mb-2 p-2 border rounded"
-        />
+        <div className="space-y-3">
+          <div>
+            <label className="block text-sm mb-1">Title</label>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full px-3 py-2 rounded-md border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
 
-        <label className="block mb-2">Description (optional)</label>
-        <input
-          value={desc}
-          onChange={(e) => setDesc(e.target.value)}
-          className="w-full mb-2 p-2 border rounded"
-        />
+          <div>
+            <label className="block text-sm mb-1">Description (optional)</label>
+            <input
+              value={desc}
+              onChange={(e) => setDesc(e.target.value)}
+              className="w-full px-3 py-2 rounded-md border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
 
-        <label className="block mb-2">Category</label>
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value as any)}
-          className="w-full mb-4 p-2 border rounded"
-        >
-          {categories.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+          <div>
+            <label className="block text-sm mb-1">Category</label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value as any)}
+              className="w-full px-3 py-2 rounded-md border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              {categories.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
-        <div className="flex justify-end gap-2">
-          <button onClick={onClose} className="px-4 py-2 rounded border">
+        <div className="flex justify-end gap-2 mt-6">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 rounded-md border border-input bg-background hover:bg-muted"
+          >
             Cancel
           </button>
           <button
             onClick={handleCreate}
-            className="px-4 py-2 rounded bg-slate-900 text-white"
+            className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
           >
             Create
           </button>

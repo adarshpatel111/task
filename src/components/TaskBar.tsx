@@ -52,11 +52,9 @@ export default function TaskBar({
   return (
     <div
       ref={setNodeRef}
-      {...attributes}
-      {...listeners}
       role="button"
       aria-label={task.name}
-      className={`absolute pointer-events-auto  cursor-pointer px-3 py-0.5 text-sm truncate shadow-sm flex items-center ${className}`}
+      className={`absolute z-50 cursor-pointer px-3 py-0.5 text-sm truncate shadow flex items-center ${className}`}
       style={{
         position: "absolute",
         left: `${leftPct}%`,
@@ -68,9 +66,19 @@ export default function TaskBar({
         ...transformStyle,
       }}
       title={`${task.name} (${task.startDate} → ${task.endDate})`}
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick?.(task);
+      onMouseDown={(e) => {
+        e.currentTarget.dataset.downX = e.clientX.toString();
+        e.currentTarget.dataset.downY = e.clientY.toString();
+      }}
+      onMouseUp={(e) => {
+        const downX = Number(e.currentTarget.dataset.downX || 0);
+        const downY = Number(e.currentTarget.dataset.downY || 0);
+        const moved =
+          Math.abs(e.clientX - downX) > 5 || Math.abs(e.clientY - downY) > 5;
+        if (!moved) {
+          e.stopPropagation();
+          onClick?.(task);
+        }
       }}
     >
       <div
@@ -82,11 +90,17 @@ export default function TaskBar({
         style={{ zIndex: 20 }}
         aria-label="Resize start"
       >
-        <div className="w-1 h-6 rounded-l bg-black/20" />
+        <div className="w-1 h-6 rounded-l bg-primary/30" />
       </div>
-      <div className="w-full truncate pl-3 pr-3 select-none">
+
+      <div
+        {...attributes}
+        {...listeners}
+        className="w-full truncate pl-3 pr-3 select-none text-black"
+      >
         {children ?? task.name}
       </div>
+
       <div
         onMouseDown={(e) => {
           e.stopPropagation();
@@ -96,7 +110,7 @@ export default function TaskBar({
         style={{ zIndex: 20 }}
         aria-label="Resize end"
       >
-        <div className="w-1 h-6 rounded-r bg-black/20" />
+        <div className="w-1 h-6 rounded-r bg-primary/30" />
       </div>
     </div>
   );

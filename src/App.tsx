@@ -8,23 +8,42 @@ export default function App() {
   return (
     <>
       <SonnerToaster richColors position="top-right" />
-      <div className="min-h-screen bg-slate-900 text-slate-100">
-        <div className="w-full mx-auto p-4">
-          <header className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-semibold">Project Calendar</h1>
+      <div className="min-h-screen bg-background text-foreground">
+        <div className="w-full mx-auto p-6">
+          <header className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Project Calendar
+            </h1>
           </header>
 
-          <div className="grid grid-cols-12 gap-4">
-            <aside className="col-span-3 bg-slate-800 p-4 rounded">
-              <SearchBar />
-              <FilterPanel />
-              <SidebarTasks />
-            </aside>
+          <nav className="bg-card text-card-foreground p-6 rounded-xl shadow border border-border mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-muted p-4 rounded-lg hover:bg-accent transition-colors">
+                <h2 className="text-sm font-semibold uppercase tracking-wide mb-3 text-muted-foreground">
+                  Search
+                </h2>
+                <SearchBar />
+              </div>
+              <div className="bg-muted p-4 rounded-lg hover:bg-accent transition-colors">
+                <h2 className="text-sm font-semibold uppercase tracking-wide mb-3 text-muted-foreground">
+                  Filters
+                </h2>
+                <FilterPanel />
+              </div>
 
-            <main className="col-span-9">
-              <CalendarWrapper />
-            </main>
-          </div>
+              <div className="bg-muted p-4 rounded-lg hover:bg-accent transition-colors">
+                <h2 className="text-sm font-semibold uppercase tracking-wide mb-3 text-muted-foreground">
+                  Tasks
+                </h2>
+                <div className="max-h-48 overflow-y-auto pr-2 space-y-3">
+                  <SidebarTasks />
+                </div>
+              </div>
+            </div>
+          </nav>
+          <main className="w-full">
+            <CalendarWrapper />
+          </main>
         </div>
       </div>
     </>

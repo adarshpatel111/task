@@ -5,13 +5,7 @@ import type { RootState } from "../store";
 import { format, parseISO } from "date-fns";
 import type { Task } from "../types/task";
 import TaskSheet from "./TaskSheet";
-
-const categoryColors: Record<Task["category"], string> = {
-  "To Do": "bg-amber-200 text-amber-900",
-  "In Progress": "bg-rose-200 text-rose-900",
-  Review: "bg-violet-200 text-violet-900",
-  Completed: "bg-emerald-200 text-emerald-900",
-};
+import { categoryColors } from "@/utils/categoryColors";
 
 export default function SidebarTasks() {
   const tasks = useSelector((s: RootState) => selectFilteredTasks(s));
@@ -31,20 +25,20 @@ export default function SidebarTasks() {
   return (
     <>
       <div className="mt-6">
-        <h3 className="text-sm font-semibold text-slate-300 tracking-wide mb-3">
+        <h3 className="text-sm font-semibold text-black tracking-wide mb-3">
           Tasks
         </h3>
 
         {sorted.length === 0 ? (
-          <div className="mt-4 text-slate-500 italic text-sm">
+          <div className="mt-4 text-muted italic text-sm">
             No tasks to show.
           </div>
         ) : (
-          <div className="space-y-3 max-h-[65vh] overflow-y-auto pr-1">
+          <div className="space-y-3 max-h-[65vh]  pr-1">
             {sorted.map((task) => (
               <div
                 key={task.id}
-                className="group relative p-3 rounded-xl border border-slate-700 bg-slate-800/60 hover:bg-slate-700/60 transition-colors shadow-sm"
+                className="group relative p-3 rounded-xl border border-border bg-secondary/60 hover:bg-secondary/70 transition-colors shadow-sm"
               >
                 <button
                   onClick={() => handleEdit(task)}
@@ -52,7 +46,7 @@ export default function SidebarTasks() {
                   title="Open task"
                 >
                   <div className="flex items-center justify-between">
-                    <div className="text-sm font-medium text-slate-100 truncate">
+                    <div className="text-sm font-medium text-black truncate">
                       {task.name}
                     </div>
                     <span
@@ -64,14 +58,14 @@ export default function SidebarTasks() {
                     </span>
                   </div>
 
-                  <div className="text-xs text-slate-400">
-                    {format(parseISO(task.startDate), "MMM d")} —{" "}
-                    {format(parseISO(task.endDate), "MMM d")}
+                  <div className="text-xs text-black">
+                    {format(parseISO(task.startDate), "d MMM  yyyy")} —{" "}
+                    {format(parseISO(task.endDate), "d MMM  yyyy")}
                   </div>
                 </button>
 
                 {task.description && (
-                  <p className="mt-2 text-xs text-slate-400 line-clamp-2">
+                  <p className="mt-2 text-xs text-muted line-clamp-2">
                     {task.description}
                   </p>
                 )}

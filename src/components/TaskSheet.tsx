@@ -15,6 +15,17 @@ import {
   AlertDialogDescription,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { Label } from "./ui/label";
+import { Input } from "./ui/input";
+import { Textarea } from "./ui/textarea";
+import { Button } from "./ui/button";
 
 interface Props {
   open: boolean;
@@ -82,87 +93,77 @@ export default function TaskSheet({ open, task, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1" onClick={onClose} />
-      <aside className="w-[420px] max-w-full bg-white text-slate-900 shadow-xl p-6 overflow-y-auto">
+      <aside className="w-[420px] max-w-full bg-background  shadow-lg p-6 overflow-y-auto">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
-            <h3 className="text-xl font-semibold">{task.name}</h3>
-            <div className="text-sm text-slate-500 mt-1">
+            <h3 className="text-xl font-semibold text-primary">{task.name}</h3>
+            <div className="text-sm  text-accent-foreground mt-1">
               {format(parseISO(task.startDate), "MMM d, yyyy")} —{" "}
               {format(parseISO(task.endDate), "MMM d, yyyy")}
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="text-slate-500 hover:text-slate-700"
-          >
+          <button onClick={onClose} className="text-primary hover:text-black">
             ✕
           </button>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Title</label>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full p-2 border rounded"
-            />
+            <Label>Title</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Description
-            </label>
-            <textarea
+            <Label>Description</Label>
+            <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
-              className="w-full p-2 border rounded"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium mb-1">Start</label>
-              <input
+              <Label>Start</Label>
+              <Input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full p-2 border rounded"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">End</label>
-              <input
+              <Label>End</Label>
+              <Input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full p-2 border rounded"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Category</label>
-            <select
+            <Label>Category</Label>
+            <Select
               value={category}
-              onChange={(e) => setCategory(e.target.value as TaskCategory)}
-              className="w-full p-2 border rounded"
+              onValueChange={(val) => setCategory(val as TaskCategory)}
             >
-              {categories.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex items-center justify-between gap-2 mt-4">
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <button className="px-3 py-2 bg-red-600 text-white rounded">
-                  Delete
-                </button>
+                <Button variant="destructive">Delete</Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
@@ -182,15 +183,10 @@ export default function TaskSheet({ open, task, onClose }: Props) {
             </AlertDialog>
 
             <div className="flex gap-2">
-              <button onClick={onClose} className="px-3 py-2 border rounded">
+              <Button variant="outline" onClick={onClose}>
                 Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                className="px-3 py-2 bg-slate-900 text-white rounded"
-              >
-                Save
-              </button>
+              </Button>
+              <Button onClick={handleSave}>Save</Button>
             </div>
           </div>
         </div>

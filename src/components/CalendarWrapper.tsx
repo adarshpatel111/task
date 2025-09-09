@@ -19,6 +19,11 @@ import TaskBar from "./TaskBar";
 import TaskSheet from "./TaskSheet";
 import { DndContext, type DragEndEvent, useDroppable } from "@dnd-kit/core";
 import type { Task } from "../types/task";
+import { categoryColors } from "@/utils/categoryColors";
+import { CalendarIcon, MoveLeft, MoveRight } from "lucide-react";
+import { Button } from "./ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Calendar } from "./ui/calendar";
 
 function formatKey(d: Date) {
   return format(d, "yyyy-MM-dd");
@@ -46,21 +51,23 @@ function DayCell({
       data-date={dayKey}
       onMouseDown={() => onMouseDown(dayKey)}
       onMouseEnter={() => onMouseEnter(dayKey)}
-      className={`border-r border-b border-slate-800 bg-slate-900 relative ${
+      className={`border-r border-b border-border bg-background relative ${
         inMonth ? "" : "opacity-50"
       }`}
       style={{ minHeight: `${minHeight}px`, paddingTop: `${paddingTop}px` }}
     >
       <div
         className={`absolute top-1 right-2 text-xs z-30 ${
-          isToday ? "text-right text-amber-400 font-semibold" : "text-slate-400"
+          isToday
+            ? "text-right text-primary font-semibold"
+            : "text-muted-foreground"
         }`}
       >
         {isToday ? `Today :- ${format(day, "d")}` : format(day, "d")}
       </div>
 
       {isHighlighted && (
-        <div className="absolute inset-0 bg-blue-700/10 pointer-events-none" />
+        <div className="absolute inset-0 bg-primary/10 pointer-events-none" />
       )}
     </div>
   );
@@ -282,43 +289,59 @@ export default function CalendarWrapper() {
   const maxRows = Math.max(1, ...rowsPerWeek.map((r) => r.length));
   const overlayHeight = maxRows * (taskRowHeight + taskRowGap);
 
-  const colors = {
-    "To Do": "bg-amber-100 text-slate-900 border border-amber-300",
-    "In Progress": "bg-rose-300 text-slate-900 border border-rose-400",
-    Review: "bg-violet-300 text-slate-900 border border-violet-400",
-    Completed: "bg-emerald-300 text-slate-900 border border-emerald-400",
-  };
-
   return (
-    <div onMouseUp={onMouseUp} className="text-slate-100 overflow-x-hidden">
-      <div className="flex items-center justify-between mb-3">
+    <div onMouseUp={onMouseUp} className="text-foreground overflow-x-hidden">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={prevMonth}
-            className="px-3 py-1 bg-slate-800 rounded hover:bg-slate-700"
+            className="p-2"
           >
-            Prev
-          </button>
-          <button
-            onClick={goToday}
-            className="px-3 py-1 bg-slate-800 rounded hover:bg-slate-700"
-          >
+            <MoveLeft />
+          </Button>
+          <Button variant="outline" size="sm" onClick={goToday} className="p-2">
             Today
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={nextMonth}
-            className="px-3 py-1 bg-slate-800 rounded hover:bg-slate-700"
+            className="p-2"
           >
-            Next
-          </button>
+            <MoveRight />
+          </Button>
         </div>
-        <h2 className="text-xl font-medium">
+        <h2 className="text-xl font-semibold text-center flex-1">
           {format(currentMonth, "MMMM yyyy")}
         </h2>
-        <div />
+        <div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-[220px] justify-start text-left font-normal flex items-center gap-2"
+              >
+                <CalendarIcon className="w-4 h-4" />
+                {format(currentMonth, "MMMM yyyy")}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <Calendar
+                mode="single"
+                selected={currentMonth}
+                onSelect={(date) => {
+                  if (date) setCurrentMonth(startOfMonth(date));
+                }}
+                showMonthAndYearPickers={true}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
 
-      <div className="grid grid-cols-7 text-sm text-slate-400 mb-2">
+      <div className="grid grid-cols-7 text-sm text-muted-foreground mb-2">
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
           <div key={d} className="text-center py-1">
             {d}
@@ -335,7 +358,7 @@ export default function CalendarWrapper() {
 
             return (
               <div key={wIdx} className="relative">
-                <div className="grid grid-cols-7 gap-0 border border-slate-700 rounded overflow-hidden">
+                <div className="grid grid-cols-7 gap-0 border border-border rounded overflow-hidden">
                   {week.map((day) => {
                     const dayKey = formatKey(day);
                     const isHighlighted =
@@ -400,8 +423,7 @@ export default function CalendarWrapper() {
                             onResizeStart={onResizeStart}
                             onClick={() => handleTaskClick(task)}
                             className={`${
-                              colors[task.category] ??
-                              "bg-amber-100 text-slate-900"
+                              categoryColors[task.category] ?? "bg-muted"
                             } rounded-full pointer-events-auto`}
                             style={{
                               left: `${leftPct}%`,
@@ -411,7 +433,7 @@ export default function CalendarWrapper() {
                             }}
                           >
                             <div className="flex items-center gap-3 w-full">
-                              <span className="w-2 h-2 rounded-full bg-black/40 inline-block ml-1" />
+                              <span className="w-2 h-2 rounded-full bg-foreground/40 inline-block ml-1" />
                               <span className="truncate">{task.name}</span>
                               <span className="ml-auto text-xs opacity-70 pr-2">
                                 {format(parseISO(task.endDate), "d")}
