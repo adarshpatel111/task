@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { addTask } from "../store/TasksSlice";
 import { useDispatch } from "react-redux";
+import { format, parseISO } from "date-fns";
 
 interface Props {
   open: boolean;
@@ -47,6 +48,10 @@ export default function CreateTaskModal({
       <div className="bg-card text-card-foreground rounded-xl shadow-lg p-6 w-96 border border-border">
         <h3 className="text-lg font-semibold mb-4">Create Task</h3>
 
+        <div className="flex gap-4 mb-3 text-sm text-muted-foreground">
+          <div>Start: {format(parseISO(startDate), "MMM d, yyyy")}</div>
+          <div>End: {format(parseISO(endDate), "MMM d, yyyy")}</div>
+        </div>
         <div className="space-y-3">
           <div>
             <label className="block text-sm mb-1">Title</label>
@@ -56,7 +61,6 @@ export default function CreateTaskModal({
               className="w-full px-3 py-2 rounded-md border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
-
           <div>
             <label className="block text-sm mb-1">Description (optional)</label>
             <input
